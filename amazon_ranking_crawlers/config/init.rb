@@ -6,6 +6,10 @@ require "daimon_skycrawlers/queue"
 DaimonSkycrawlers.configure do |config|
   config.logger = DaimonSkycrawlers::Logger.default
   config.crawler_interval = 1
+  # エンキューされない状態で何秒待機するかの設定。
+  # デフォルトは 10 秒なんだけど、それだと tmux の画面切り替えるだけで
+  # あっという間なので変えた。
+  config.shutdown_interval = 60
 end
 
 DaimonSkycrawlers::Queue.configure do |config|
