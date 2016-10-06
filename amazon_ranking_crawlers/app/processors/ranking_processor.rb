@@ -1,10 +1,6 @@
-#!/usr/bin/env ruby
-
 require "daimon_skycrawlers/processor"
 require "pry"
 require "nokogiri"
-
-require_relative "./init"
 
 class MyProcessor < DaimonSkycrawlers::Processor::Base
   def call(message)
