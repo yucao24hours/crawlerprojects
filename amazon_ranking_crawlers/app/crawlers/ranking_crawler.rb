@@ -37,7 +37,7 @@ class MyCrawler < DaimonSkycrawlers::Crawler::Base
     when :denied
       "because of robots.txt"
     when :no_update
-      "because the page has been updated"
+      "because the page has not been updated"
     end
 
     log.info("Skip #{url} #{str}")
