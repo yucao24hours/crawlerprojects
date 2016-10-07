@@ -2,6 +2,8 @@ require "daimon_skycrawlers/crawler"
 require "daimon_skycrawlers/crawler/base"
 require "daimon_skycrawlers/filter/robots_txt_checker"
 require "daimon_skycrawlers/filter/update_checker"
+require "pry"
+require "pry-nav"
 
 class MyCrawler < DaimonSkycrawlers::Crawler::Base
   def fetch(url, **kw)

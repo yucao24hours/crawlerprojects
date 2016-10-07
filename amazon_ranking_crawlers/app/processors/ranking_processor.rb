@@ -1,5 +1,6 @@
 require "daimon_skycrawlers/processor"
 require "pry"
+require "pry-nav"
 require "nokogiri"
 require "csv"
 
