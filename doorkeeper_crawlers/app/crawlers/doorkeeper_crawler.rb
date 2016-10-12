@@ -26,6 +26,8 @@ class MyCrawler < DaimonSkycrawlers::Crawler::Base
 
     response = connection.get(url)
 
+    # TODO 次のページがあるときはそちらも取れるようにしたい
+
     data = [url.to_s, response.headers, response.body]
     storage.save(*data)
 
