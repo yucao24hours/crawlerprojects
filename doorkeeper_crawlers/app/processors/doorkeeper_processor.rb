@@ -12,12 +12,15 @@ class MyProcessor < DaimonSkycrawlers::Processor::Base
     page = storage.find(url)
     doc = Nokogiri::HTML(page.body)
 
-    binding.pry
-    #CSV.open("doorkeeper_offices.csv", "w") do |csv|
-    #  rankings.each do |row|
-    #    csv << row
-    #  end
-    #end
+    CSV.open("connpass_results.csv", "w+") do |csv|
+      csv << %w(イベントタイトル イベントページ 会場住所)
+      doc.xpath("//div[contains(@class, 'event_list')]").each do |element|
+        title = element.xpath(".//p[@class='event_title']/a/text()")
+        href = element.xpath(".//p[@class='event_title']/a/@href")
+        venue = element.xpath(".//p[contains(@class, 'event_place')]").text.strip
+        csv << [title, href, venue]
+      end
+    end
   end
 end
 
