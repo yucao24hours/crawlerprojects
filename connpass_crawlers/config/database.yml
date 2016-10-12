@@ -7,8 +7,8 @@ default: &default
 
 development:
   <<: *default
-  database: doorkeeper_crawlers_development
-  #username: doorkeeper_crawlers
+  database: connpass_crawlers_development
+  #username: connpass_crawlers
   #password:
   #host: localhost
   #port: 5432
@@ -17,10 +17,10 @@ development:
 
 test:
   <<: *default
-  database: doorkeeper_crawlers_test
+  database: connpass_crawlers_test
 
 production:
   <<: *default
-  database: doorkeeper_crawlers_production
-  username: doorkeeper_crawlers
-  password: <%= ENV['DOORKEEPER_CRAWLERS_PASSWORD'] %>
+  database: connpass_crawlers_production
+  username: connpass_crawlers
+  password: <%= ENV['CONNPASS_CRAWLERS_PASSWORD'] %>
