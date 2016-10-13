@@ -17,12 +17,12 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
       return
     end
 
-    ## 取得してきたページの情報を更新する必要がなければとばす
-    #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
-    #unless update_checker.call(url.to_s, connection: connection)
-    #  skip(url, :no_update)
-    #  return
-    #end
+    # 取得してきたページの情報を更新する必要がなければとばす
+    update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+    unless update_checker.call(url.to_s, connection: connection)
+      skip(url, :no_update)
+      return
+    end
 
     response = connection.get(url)
 
