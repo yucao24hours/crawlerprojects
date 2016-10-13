@@ -107,9 +107,10 @@ PLATFORMS
 
 DEPENDENCIES
   daimon_skycrawlers
+  nokogiri
   pry
   pry-nav
   rake
 
 BUNDLED WITH
-   1.13.1
+   1.13.2
