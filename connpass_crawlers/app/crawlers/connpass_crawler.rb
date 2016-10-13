@@ -40,6 +40,7 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
         next_page = doc.xpath("//p[@class='to_next']/a/@href").text
         url = "https://connpass.com/search/#{next_page}"
       else
+        puts "====Crawling ended!===="
         break
       end
     end
