@@ -1,3 +1,4 @@
+require "nokogiri"
 require "daimon_skycrawlers/crawler"
 require "daimon_skycrawlers/crawler/base"
 require "daimon_skycrawlers/filter/robots_txt_checker"
@@ -17,21 +18,31 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
       return
     end
 
-    # 取得してきたページの情報を更新する必要がなければとばす
-    update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
-    unless update_checker.call(url.to_s, connection: connection)
-      skip(url, :no_update)
-      return
+    ## 取得してきたページの情報を更新する必要がなければとばす
+    #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+    #unless update_checker.call(url.to_s, connection: connection)
+    #  skip(url, :no_update)
+    #  return
+    #end
+
+    loop do
+      puts "****Getting to #{url}..."
+      response = connection.get(url)
+
+      data = [url.to_s, response.headers, response.body]
+      puts "====Saving with key #{url}..."
+      storage.save(*data)
+      schedule_to_process(url.to_s)
+
+      # 次のページがあるときはそちらも取りにいく
+      doc = Nokogiri::HTML(response.body)
+      if doc.xpath("//p[@class='to_next']").present?
+        next_page = doc.xpath("//p[@class='to_next']/a/@href").text
+        url = "https://connpass.com/search/#{next_page}"
+      else
+        break
+      end
     end
-
-    response = connection.get(url)
-
-    # TODO 次のページがあるときはそちらも取れるようにしたい
-
-    data = [url.to_s, response.headers, response.body]
-    storage.save(*data)
-
-    schedule_to_process(url.to_s)
   end
 
   private
