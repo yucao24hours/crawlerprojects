@@ -5,7 +5,7 @@ require "daimon_skycrawlers/filter/update_checker"
 require "pry"
 require "pry-nav"
 
-class MyCrawler < DaimonSkycrawlers::Crawler::Base
+class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
   def fetch(url, **kw)
     @n_processed_urls += 1
     @skipped = false
@@ -52,7 +52,7 @@ class MyCrawler < DaimonSkycrawlers::Crawler::Base
 end
 
 base_url = "http://example.com"
-crawler = MyCrawler.new(base_url)
+crawler = ConnpassCrawler.new(base_url)
 
 DaimonSkycrawlers.register_crawler(crawler)
 
