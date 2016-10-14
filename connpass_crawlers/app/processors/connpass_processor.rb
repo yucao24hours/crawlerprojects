@@ -12,14 +12,20 @@ class MyProcessor < DaimonSkycrawlers::Processor::Base
     page = storage.find(url)
     doc = Nokogiri::HTML(page.body)
 
-    CSV.open("connpass_results.csv", "w+") do |csv|
-      csv << %w(イベントタイトル イベントページ 会場住所)
-      doc.xpath("//div[contains(@class, 'event_list')]").each do |element|
-        title = element.xpath(".//p[@class='event_title']/a/text()")
-        href = element.xpath(".//p[@class='event_title']/a/@href")
-        venue = element.xpath(".//p[contains(@class, 'event_place')]").text.strip
-        csv << [title, href, venue]
-      end
+    CSV.open("connpass_results_#{DateTime.now.strftime('%Y%m%d%H%M%S%L')}.csv", "w+") do |csv|
+      csv << %w(イベントタイトル 開催年月日 開始時間 会場住所)
+      # イベントタイトル
+      title = doc.xpath(".//h2[@class='event_title']/text()").map(&:text).select{|elem| elem.present? }.join("").strip
+
+      # 開催年月日
+      event_schedule_area = doc.xpath(".//div[contains(@class, 'event_schedule_area')]")
+      date = event_schedule_area.xpath(".//p[@class='ymd']/text()").text
+      time = event_schedule_area.xpath(".//span[@class='hi']/text()").text
+
+      # 会場住所
+      address = doc.xpath(".//div[contains(@class, 'event_place_area')]/p[@class='adr']").text.strip
+
+      csv << [title, date, time, address]
     end
   end
 end
