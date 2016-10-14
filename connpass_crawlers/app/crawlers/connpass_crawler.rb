@@ -26,11 +26,11 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
     #end
 
     loop do
-      puts "****Getting to #{url}..."
+      log.info "*Getting #{url}"
       response = connection.get(url)
 
       data = [url.to_s, response.headers, response.body]
-      puts "====Saving with key #{url}..."
+      log.info "Saving with key #{url}"
       storage.save(*data)
       schedule_to_process(url.to_s)
 
@@ -40,7 +40,7 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
         next_page = doc.xpath("//p[@class='to_next']/a/@href").text
         url = "https://connpass.com/search/#{next_page}"
       else
-        puts "====Crawling ended!===="
+        log.info "Crawling ended!"
         break
       end
     end
