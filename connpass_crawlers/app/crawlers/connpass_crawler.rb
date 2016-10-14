@@ -19,14 +19,6 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
     end
 
     loop do
-      # XXX update_checker ってここでいいのか？
-      ## 取得してきたページの情報を更新する必要がなければとばす
-      #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
-      #unless update_checker.call(url.to_s, connection: connection)
-      #  skip(url, :no_update)
-      #  return
-      #end
-
       # NOTE url には検索クエリを含んだ URL が渡ってくるようにする。
       #      検索結果にヒットしたイベント一覧を表示し、各イベントの詳細 URL に GET をして
       #      ページデータを保存する。
@@ -36,6 +28,13 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
       urls = doc.xpath("//p[@class='event_title']/a/@href").map(&:text)
 
       urls.each do |linked_url|
+        # 各イベント詳細ページの情報を更新する必要がなければとばす
+        update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+        unless update_checker.call(linked_url.to_s, connection: connection)
+          skip(linked_url, :no_update)
+          return
+        end
+
         log.info "Getting #{linked_url}"
         res = connection.get(linked_url)
 
