@@ -25,6 +25,8 @@ class MyProcessor < DaimonSkycrawlers::Processor::Base
       # 会場住所
       address = doc.xpath(".//div[contains(@class, 'event_place_area')]/p[@class='adr']").text.strip
 
+      # 実運用ではここが DB insert などになる想定。
+      # しかし 1 レコードごとに SQL 発行してたのでは効率が悪すぎるな。。
       csv << [title, date, time, address]
     end
   end
