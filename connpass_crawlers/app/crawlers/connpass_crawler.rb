@@ -18,25 +18,36 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
       return
     end
 
-    ## 取得してきたページの情報を更新する必要がなければとばす
-    #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
-    #unless update_checker.call(url.to_s, connection: connection)
-    #  skip(url, :no_update)
-    #  return
-    #end
-
     loop do
-      log.info "*Getting #{url}"
+      # XXX update_checker ってここでいいのか？
+      ## 取得してきたページの情報を更新する必要がなければとばす
+      #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+      #unless update_checker.call(url.to_s, connection: connection)
+      #  skip(url, :no_update)
+      #  return
+      #end
+
+      # NOTE url には検索クエリを含んだ URL が渡ってくるようにする。
+      #      検索結果にヒットしたイベント一覧を表示し、各イベントの詳細 URL に GET をして
+      #      ページデータを保存する。
       response = connection.get(url)
 
-      data = [url.to_s, response.headers, response.body]
-      log.info "Saving with key #{url}"
-      storage.save(*data)
-      schedule_to_process(url.to_s)
+      doc = Nokogiri::HTML(response.body)
+      urls = doc.xpath("//p[@class='event_title']/a/@href").map(&:text)
+
+      urls.each do |linked_url|
+        log.info "Getting #{linked_url}"
+        res = connection.get(linked_url)
+
+        log.info "Saving with key #{linked_url}"
+        data = [linked_url.to_s, res.headers, res.body]
+        storage.save(*data)
+        schedule_to_process(linked_url.to_s)
+      end
 
       # 次のページがあるときはそちらも取りにいく
-      doc = Nokogiri::HTML(response.body)
       if doc.xpath("//p[@class='to_next']").present?
+        log.info "===Go to the next page"
         next_page = doc.xpath("//p[@class='to_next']/a/@href").text
         url = "https://connpass.com/search/#{next_page}"
       else
