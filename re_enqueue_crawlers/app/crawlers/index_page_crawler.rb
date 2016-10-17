@@ -12,6 +12,7 @@ require_relative "../filters/index_page_filter"
 
 class IndexPageCrawler < DaimonSkycrawlers::Crawler::Base
   def fetch(url, **kw)
+    # XXX この if 文中の処理は crawler 層に入ってくる前に動いててほしい
     if !index_page?(url)
       log.info "#{url} will not be crawled by IndexPageCrawler"
       return
