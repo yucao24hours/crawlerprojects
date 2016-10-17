@@ -1,4 +1,3 @@
-require "nokogiri"
 require "daimon_skycrawlers/crawler"
 require "daimon_skycrawlers/crawler/base"
 require "daimon_skycrawlers/filter/robots_txt_checker"
@@ -19,36 +18,27 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
     end
 
     loop do
+      # 各イベント詳細ページの情報を更新する必要がなければとばす
+      #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+      #unless update_checker.call(linked_url.to_s, connection: connection)
+      #  skip(linked_url, :no_update)
+      #  return
+      #end
+
       # NOTE url には検索クエリを含んだ URL が渡ってくるようにする。
-      #      検索結果にヒットしたイベント一覧を表示し、各イベントの詳細 URL に GET をして
-      #      ページデータを保存する。
+      #      結果一覧のドキュメント構造そのまま GET してくる。構成要素のパースは processor でやる。
+      log.info "Getting #{url}"
       response = connection.get(url)
 
-      doc = Nokogiri::HTML(response.body)
-      urls = doc.xpath("//p[@class='event_title']/a/@href").map(&:text)
-
-      urls.each do |linked_url|
-        # 各イベント詳細ページの情報を更新する必要がなければとばす
-        update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
-        unless update_checker.call(linked_url.to_s, connection: connection)
-          skip(linked_url, :no_update)
-          return
-        end
-
-        log.info "Getting #{linked_url}"
-        res = connection.get(linked_url)
-
-        log.info "Saving with key #{linked_url}"
-        data = [linked_url.to_s, res.headers, res.body]
-        storage.save(*data)
-        schedule_to_process(linked_url.to_s)
-      end
+      log.info "Saving with key #{url}"
+      data = [url.to_s, response.headers, response.body]
+      storage.save(*data)
+      schedule_to_process(url.to_s)
 
       # 次のページがあるときはそちらも取りにいく
+      doc = Nokogiri::HTML(response.body)
       if doc.xpath("//p[@class='to_next']").present?
-        log.info "===Go to the next page"
-        next_page = doc.xpath("//p[@class='to_next']/a/@href").text
-        url = "https://connpass.com/search/#{next_page}"
+        url = next_page_url(doc)
       else
         log.info "Crawling ended!"
         break
@@ -57,6 +47,11 @@ class ConnpassCrawler < DaimonSkycrawlers::Crawler::Base
   end
 
   private
+
+  def next_page_url(doc)
+    next_page = doc.xpath("//p[@class='to_next']/a/@href").text
+    "https://connpass.com/search/#{next_page}"
+  end
 
   def skip(url, reason)
     str = case reason
