@@ -10,43 +10,53 @@ class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
     @n_processed_urls += 1
     @skipped = false
 
-    # robots.txt によって拒否されていたらとばす
-    robots_txt_checker = DaimonSkycrawlers::Filter::RobotsTxtChecker.new(base_url: @base_url)
-    unless robots_txt_checker.call(url)
+    if blocked?(url)
       skip(url, :denied)
       return
     end
 
     loop do
-      # 各イベント詳細ページの情報を更新する必要がなければとばす
-      #update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
-      #unless update_checker.call(linked_url.to_s, connection: connection)
-      #  skip(linked_url, :no_update)
-      #  return
-      #end
+      if need_update?(url)
+        # NOTE url には検索クエリを含んだ URL が渡ってくるようにする。
+        #      結果一覧のドキュメント構造そのまま GET してくる。構成要素のパースは processor でやる。
+        log.info "Getting #{url}"
+        response = connection.get(url)
 
-      # NOTE url には検索クエリを含んだ URL が渡ってくるようにする。
-      #      結果一覧のドキュメント構造そのまま GET してくる。構成要素のパースは processor でやる。
-      log.info "Getting #{url}"
-      response = connection.get(url)
+        log.info "Saving with key #{url}"
+        data = [url.to_s, response.headers, response.body]
+        storage.save(*data)
+        schedule_to_process(url.to_s)
 
-      log.info "Saving with key #{url}"
-      data = [url.to_s, response.headers, response.body]
-      storage.save(*data)
-      schedule_to_process(url.to_s)
-
-      # 次のページがあるときはそちらも取りにいく
-      doc = Nokogiri::HTML(response.body)
-      if doc.xpath("//p[@class='to_next']").present?
-        url = next_page_url(doc)
+        # 次のページがあるときはそちらも取りにいく
+        doc = Nokogiri::HTML(response.body)
+        if doc.xpath("//p[@class='to_next']").present?
+          url = next_page_url(doc)
+        else
+          log.info "Crawling ended!"
+          break
+        end
       else
-        log.info "Crawling ended!"
-        break
+        # 更新の必要がなければ飛ばす
+        skip(url, :no_update)
+        return
       end
     end
   end
 
   private
+
+  # NOTE UpdateChecker#call は、ストレージ内のデータを更新する必要があるときに
+  #      false を返してくる。
+  def need_update?(url)
+    checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+    !checker.call(url.to_s, connection: connection)
+  end
+
+  # NOTE RobotsTxtChecker#call は、block されていたら false を返してくる。
+  def blocked?(url)
+    checker = DaimonSkycrawlers::Filter::RobotsTxtChecker.new(base_url: @base_url)
+    !checker.call(url)
+  end
 
   def next_page_url(doc)
     next_page = doc.xpath("//p[@class='to_next']/a/@href").text
