@@ -8,7 +8,7 @@ require "pry-nav"
 # XXX 今は filters っていうディレクトリはデフォルトでは存在しないので自分で作って、
 #     そこに置いた。そのためフレームワーク側で自動的にロードするということもしていないので
 #     require_relative してる。
-require_relative "../filters/re_enqueue_filter"
+require_relative "../filters/index_page_filter"
 
 class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
   def fetch(url, **kw)
@@ -20,8 +20,9 @@ class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
       return
     end
 
-    checker = ReEnqueueFilter.new
+    checker = IndexPageFilter.new
     checker.call(url)
+
     loop do
       if need_update?(url)
         # NOTE url には検索クエリを含んだ URL が渡ってくるようにする。
