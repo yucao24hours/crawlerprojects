@@ -10,10 +10,10 @@ require "pry-nav"
 #     require_relative してる。
 require_relative "../filters/index_page_filter"
 
-class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
+class IndexPageCrawler < DaimonSkycrawlers::Crawler::Base
   def fetch(url, **kw)
     if !index_page?(url)
-      log.info "No crawl by ReEnqueueCrawler"
+      log.info "#{url} will not be crawled by IndexPageCrawler"
       return
     end
 
@@ -96,7 +96,7 @@ class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
 end
 
 base_url = "http://example.com"
-crawler = ReEnqueueCrawler.new(base_url)
+crawler = IndexPageCrawler.new(base_url)
 
 DaimonSkycrawlers.register_crawler(crawler)
 
