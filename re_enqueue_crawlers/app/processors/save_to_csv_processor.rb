@@ -4,6 +4,7 @@ require "pry-nav"
 require "nokogiri"
 require "csv"
 
+# これは最終的にうごくほうになる（イベント詳細ページだけに対してうごく）
 class MyProcessor < DaimonSkycrawlers::Processor::Base
   def call(message)
     return if message[:heartbeat]
