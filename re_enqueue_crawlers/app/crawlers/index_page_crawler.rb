@@ -12,6 +12,11 @@ require_relative "../filters/index_page_filter"
 
 class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
   def fetch(url, **kw)
+    if !index_page?(url)
+      log.info "No crawl by ReEnqueueCrawler"
+      return
+    end
+
     @n_processed_urls += 1
     @skipped = false
 
@@ -19,9 +24,6 @@ class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
       skip(url, :denied)
       return
     end
-
-    checker = IndexPageFilter.new
-    checker.call(url)
 
     loop do
       if need_update?(url)
@@ -53,6 +55,13 @@ class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
 
   private
 
+  # NOTE IndexPageFilter#call は、引数で渡された URL（エンキューされてきたもの）が
+  #      一覧ページのものであるときに true を返してくる。
+  def index_page?(url)
+    filter = IndexPageFilter.new
+    filter.call(url)
+  end
+
   # NOTE UpdateChecker#call は、ストレージ内のデータを更新する必要があるときに
   #      false を返してくる。
   def need_update?(url)
@@ -60,7 +69,7 @@ class ReEnqueueCrawler < DaimonSkycrawlers::Crawler::Base
     !checker.call(url.to_s, connection: connection)
   end
 
-  # NOTE RobotsTxtChecker#call は、block されていたら false を返してくる。
+  # NOTE RobotsTxtChecker#call は、許可されていたら true を、ブロックされていたら false を返してくる。
   def blocked?(url)
     checker = DaimonSkycrawlers::Filter::RobotsTxtChecker.new(base_url: @base_url)
     !checker.call(url)
