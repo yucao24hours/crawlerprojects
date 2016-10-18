@@ -1,9 +1,8 @@
 require "daimon_skycrawlers/filter/base"
 
 class IndexPageFilter < DaimonSkycrawlers::Filter::Base
-  # XXX 他の checker 系（Filter::Base を継承したもの）との対称性を取るのであれば
-  #     index ページだったときには false を返すようにするべきなのかもしれないけど...
+  # NOTE 検索結果の一覧ページかどうかを判定する
   def call(url)
-    /https:\/\/connpass.com\/search\//.match(url) ? true : false
+    url.match(/https:\/\/connpass.com\/search\//) ? true : false
   end
 end
