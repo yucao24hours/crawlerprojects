@@ -29,6 +29,15 @@ class ReEnqueueProcessor < DaimonSkycrawlers::Processor::Base
       DaimonSkycrawlers::Crawler.enqueue_url(event_url)
     end
   end
+
+  private
+
+  # NOTE IndexPageFilter#call は、引数で渡された URL（エンキューされてきたもの）が
+  #      一覧ページのものであるときに true を返してくる。
+  def index_page?(url)
+    filter = IndexPageFilter.new
+    filter.call(url)
+  end
 end
 
 processor = ReEnqueueProcessor.new

@@ -4,12 +4,19 @@ require "pry-nav"
 require "nokogiri"
 require "csv"
 
-# これは最終的にうごくほうになる（イベント詳細ページだけに対してうごく）
-class MyProcessor < DaimonSkycrawlers::Processor::Base
+class SaveToCsvProcessor < DaimonSkycrawlers::Processor::Base
   def call(message)
+    # XXX この if 文中の処理は processor 層に入ってくる前に動いててほしい
+    # XXX index ページは処理したくなくて、index ページ以外のときだけこのクローラで処理したいのでこうしている。
+    #     というかこれ以外にフィルタのしようがない気がしている。
+    url = message[:url]
+    if index_page?(url)
+      log.info "#{url} will not be crawled by SaveToCsvProcessor"
+      return
+    end
+
     return if message[:heartbeat]
 
-    url = message[:url]
     page = storage.find(url)
     doc = Nokogiri::HTML(page.body)
 
@@ -33,7 +40,7 @@ class MyProcessor < DaimonSkycrawlers::Processor::Base
   end
 end
 
-processor = MyProcessor.new
+processor = SaveToCsvProcessor.new
 DaimonSkycrawlers.register_processor(processor)
 
 DaimonSkycrawlers::Processor.run
