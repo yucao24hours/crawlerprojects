@@ -1,0 +1,26 @@
+# PostgreSQL. Versions 8.2 and up are supported.
+#
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+
+development:
+  <<: *default
+  database: re_enqueue_crawlers_development
+  #username: re_enqueue_crawlers
+  #password:
+  #host: localhost
+  #port: 5432
+  #schema_search_path: myapp,sharedapp,public
+  #min_messages: notice
+
+test:
+  <<: *default
+  database: re_enqueue_crawlers_test
+
+production:
+  <<: *default
+  database: re_enqueue_crawlers_production
+  username: re_enqueue_crawlers
+  password: <%= ENV['RE_ENQUEUE_CRAWLERS_PASSWORD'] %>
