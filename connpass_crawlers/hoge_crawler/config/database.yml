@@ -1,0 +1,26 @@
+# PostgreSQL. Versions 8.2 and up are supported.
+#
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+
+development:
+  <<: *default
+  database: hoge_crawler_development
+  #username: hoge_crawler
+  #password:
+  #host: localhost
+  #port: 5432
+  #schema_search_path: myapp,sharedapp,public
+  #min_messages: notice
+
+test:
+  <<: *default
+  database: hoge_crawler_test
+
+production:
+  <<: *default
+  database: hoge_crawler_production
+  username: hoge_crawler
+  password: <%= ENV['HOGE_CRAWLER_PASSWORD'] %>
