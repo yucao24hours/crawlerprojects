@@ -3,12 +3,20 @@ require "pry"
 require "pry-nav"
 require "nokogiri"
 
-# イベント詳細のリンクを見つけてきて、その URL を再エンキューする
+# NOTE イベント一覧ページからイベント詳細のリンクを見つけてきて、
+#      その URL を再エンキューする
 class ReEnqueueProcessor < DaimonSkycrawlers::Processor::Base
   def call(message)
+    url = message[:url]
+
+    # XXX この if 文中の処理は processor 層に入ってくる前に動いててほしい
+    if !index_page?(url)
+      log.info "#{url} will not be processed by ReEnqueueProcessor"
+      return
+    end
+
     return if message[:heartbeat]
 
-    url = message[:url]
     page = storage.find(url)
     doc = Nokogiri::HTML(page.body)
 
