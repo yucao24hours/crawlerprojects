@@ -24,7 +24,7 @@ class AmazonCrawler < DaimonSkycrawlers::Crawler::Base
       return
     end
 
-    @prepare.call(connection)
+    find(:xpath, "//a/span[contains(text(), 'お客様へのおすすめ')]").click
 
 
     puts "This is the end of fetch method"
