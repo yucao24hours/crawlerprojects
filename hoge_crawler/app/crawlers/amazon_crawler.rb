@@ -27,7 +27,6 @@ class AmazonCrawler < DaimonSkycrawlers::Crawler::Base
     find(:xpath, "//a/span[contains(text(), 'お客様へのおすすめ')]").click
 
 
-    puts "This is the end of fetch method"
     #schedule_to_process(url.to_s)
   end
 end
@@ -49,8 +48,6 @@ crawler.prepare do |connection|
   visit "/"
 
   click_link "新規登録はこちら"
-
-  binding.pry
 
   click_link "サインイン"
 
