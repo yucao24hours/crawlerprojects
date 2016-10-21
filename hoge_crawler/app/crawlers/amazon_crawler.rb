@@ -4,7 +4,6 @@ require "daimon_skycrawlers/crawler/base"
 require "open-uri"
 require "capybara"
 require "capybara/dsl"
-require "capybara/poltergeist"
 require "launchy"
 require "dotenv"
 
