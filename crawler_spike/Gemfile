@@ -3,6 +3,7 @@ source "https://rubygems.org"
 gem "rake"
 gem "daimon_skycrawlers"
 
-gem "mechanize"
+gem "capybara"
+gem "selenium-webdriver"
 gem "pry"
 gem "pry-nav"
